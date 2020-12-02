@@ -117,21 +117,45 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
     int i;
     int isTCPPacket;
     int isHTTPPacket = false;
-    
-    if (inputProtocal == 1) {       //처음에 1번을 눌렀으면 http패킷을 찾게 되는데 일단 패킷이 tcp인지부터 검사하게 된다.
-        if (pkt_data[23] == TCP_PROTOCOL) isTCPPacket = true;   //ip packet안에 protocol type 부분이 6번이면 tcp이다
+    /*
+    if (inputProtocal == 1) {       //TCP보는 코드
+        if (pkt_data[23] == TCP_PROTOCOL) {
+            isTCPPacket = true;
+            TCP_HDR* currentTCP = (tcp_hdr*)malloc(sizeof(tcp_hdr));
+            TCP* TCPClass = new TCP(currentTCP);
+            TCPClass->makeTCPPacket(pkt_data);
+            //outputPacket(header, pkt_data);
+            TCPClass->printTCP();
+            free(currentTCP);
+            delete TCPClass;
+        }
+        else isTCPPacket = false;
+    }*/
+    if (inputProtocal == 1) {
+        if (pkt_data[23] == TCP_PROTOCOL) isTCPPacket = true;
         else isTCPPacket = false;
     }
+
+
     if (isTCPPacket == true) {
         isHTTPPacket = checkHTTP(header, pkt_data);
     }
     
-    if (isHTTPPacket == true) {
+   if (isHTTPPacket == true) {
         IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
-        IP IPClass(currentIP);
-        IPClass.makeIPPacket(pkt_data);
-        //outputPacket(header, pkt_data);
-        IPClass.printIP();
+        IP* IPClass = new IP(currentIP);
+        IPClass->makeIPPacket(pkt_data);
+
+        TCP_HDR* currentTCP = (tcp_hdr*)malloc(sizeof(tcp_hdr));
+        TCP* TCPClass = new TCP(currentTCP);
+        TCPClass->makeTCPPacket(pkt_data);
+
+        IPClass->printIP();
+        TCPClass->printTCP();
+
+
+        delete TCPClass;
+        delete IPClass;
     }
     //else printf("이 패킷은 HTTP패킷이 아닙니다\n");
     //outputPacket(header, pkt_data); /* 패킷 출력 */

@@ -65,16 +65,13 @@ typedef struct tcp_hdr
 	unsigned short destPort;		// destination port - 16bit
 	unsigned int sequenceNumber;	// sequence number - 32 bit
 	unsigned int acknowledgeNumber; // acknowledgement number - 32 bit
-
 	
-	
-	unsigned char dataOffset : 4; /*The number of 32-bit words in the TCP header.
+	unsigned char dataOffset; /*The number of 32-bit words in the TCP header.
 								  This indicates where the data begins.
 								  The length of the TCP header is always a multiple
 								  of 32 bits.*/
 	
-
-	unsigned char res : 3; // According to rfc					
+/*	unsigned char res : 3; // According to rfc					
 	unsigned char ns : 1;  // Nonce Sum Flag Added in RFC 3540. (새롭게 생긴 비트)
 	unsigned char cwr : 1; // Congestion Window Reduced Flag	(새롭게 생긴 비트)
 	unsigned char ecn : 1; // ECN-Echo Flag						(새롭게 생긴 비트)
@@ -83,7 +80,7 @@ typedef struct tcp_hdr
 	unsigned char psh : 1; // Push Flag
 	unsigned char rst : 1; // Reset Flag
 	unsigned char syn : 1; // Synchronise Flag
-	unsigned char fin : 1; // Finish Flag
+	unsigned char fin : 1; // Finish Flag*/
 	
 	unsigned short windowSize;    // window
 	unsigned short checkSum;	  // checksum
@@ -94,42 +91,25 @@ class TCP{
 private:
 	TCP_HDR* tcpHeader;
 public:
-	TCP_HDR(TCP_HDR* tcpHeader);
-	void makeIPPacket(const unsigned char* pkt_data);
-	void setVersion(char version);
-	void setHeaderLength(char headerLength);
-	void setTypeOfService(char typeOfService);
-	void setTotalLength(short totalLength);
-	void setIdentification(short identification);
-	void setFragOffset(char fragOffset);
-	void setMoreFragment(char moreFragment);
-	void setDontFragment(char dontFragment);
-	void setReservedZero(char reservedZero);
-	void setFragOffset1(char fragOffset1);
-	void setTTL(char TTL);
-	void setProtocolType(char protocolType);
+	TCP(TCP_HDR* tcpHeader);
+	void makeTCPPacket(const unsigned char* pkt_data);
+	void setSourcePort(short sourcePort);
+	void setDestPort(short DestPort);
+	void setSequenceNumber(unsigned int sequenceNumber);
+	void setAcknowledgeNumber(unsigned int acknowledgeNumber);
+	void setDataOffset(char dataOffset);
+	void setWindowSize(short windowSize);
 	void setCheckSum(short checkSum);
-	void setSourceAddress(char sourceAddress, int index);
-	void setDestinationAddress(char destinationAddress, int index);
 
-
-	unsigned char getVersion();
-	unsigned char getHeaderLength();
-	unsigned char getTypeOfService();
-	unsigned short getTotalLength();
-	unsigned short getIdentification();
-	unsigned char getFragOffset();
-	unsigned char getMoreFragment();
-	unsigned char getDontFragment();
-	unsigned char getReservedZero();
-	unsigned char getFragOffset1();
-	unsigned char getTTL();
-	unsigned char  getProtocolType();
+	unsigned short getSourcePort();
+	unsigned short getDestPort();
+	unsigned int getSequenceNumber();
+	unsigned int getAcknowledgeNumber();
+	unsigned char getDataOffset();
+	unsigned short getWindowSize();
 	unsigned short getCheckSum();
-	unsigned char  getSourceAddress(int index);
-	unsigned char  getDestinationAddress(int index);
 
-	void printIP();
+	void printTCP();
 };
 
 typedef struct udp_hdr

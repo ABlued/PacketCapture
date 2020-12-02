@@ -1,5 +1,13 @@
 #include "struct.h"
 #include <stdio.h>
+
+/*
+*--------------------------------------------------------------------------------------------
+*-------------------------------------------IP 备泅何---------------------------------------
+*--------------------------------------------------------------------------------------------
+*/
+
+
 IP::IP(IPV4_HDR* ipHeader) {
 	this->ipHeader = ipHeader;
 }
@@ -162,5 +170,110 @@ void IP::printIP() {
 	printf("| Destination IP :%d.%d.%d.%d\t\t\t\t|\n", this->getDestinationAddress(1),
 		this->getDestinationAddress(2), this->getDestinationAddress(3),this->getDestinationAddress(4));
 	printf("-------------------------------------------------------------------\n");
-	printf("\n");
+	printf("\n\n");
 }
+
+
+/*
+*--------------------------------------------------------------------------------------------
+*-------------------------------------------TCP 备泅何---------------------------------------
+*--------------------------------------------------------------------------------------------
+*/
+
+
+TCP::TCP(TCP_HDR* tcpHeader) {
+	this->tcpHeader = tcpHeader;
+}
+
+void TCP::makeTCPPacket(const unsigned char* pkt_data) {
+	this->setSourcePort(pkt_data[34] * 256 + pkt_data[35]);
+	this->setDestPort(pkt_data[36] * 256 + pkt_data[37]);
+	this->setSequenceNumber(pkt_data[38] * 16777216 + pkt_data[39] * 65536 + pkt_data[40] * 256 + pkt_data[41]);
+	this->setAcknowledgeNumber(pkt_data[42] * 16777216 + pkt_data[43] * 65536 + pkt_data[44] * 256 + pkt_data[45]);
+	this->setDataOffset((pkt_data[46]/16) * 4);
+	this->setWindowSize(pkt_data[48] * 256 + pkt_data[49]);
+	this->setCheckSum(pkt_data[50] * 256 + pkt_data[51]);
+}
+
+void TCP::setSourcePort(short sourcePort) {
+	this->tcpHeader->sourcePort = sourcePort;
+}
+
+unsigned short TCP::getSourcePort() {
+	return this->tcpHeader->sourcePort;
+}
+
+void TCP::setDestPort(short destPort) {
+	this->tcpHeader->destPort = destPort;
+}
+
+unsigned short TCP::getDestPort() {
+	return this->tcpHeader->destPort;
+}
+
+void TCP::setSequenceNumber(unsigned int sequenceNumber) {
+	this->tcpHeader->sequenceNumber = sequenceNumber;
+}
+
+unsigned int TCP::getSequenceNumber() {
+	return this->tcpHeader->sequenceNumber;
+}
+void TCP::setAcknowledgeNumber(unsigned int acknowledgeNumber) {
+	this->tcpHeader->acknowledgeNumber = acknowledgeNumber;
+}
+
+unsigned int TCP::getAcknowledgeNumber() {
+	return this->tcpHeader->acknowledgeNumber;
+}
+
+void TCP::setDataOffset(char dataOffset) {
+	this->tcpHeader->dataOffset = dataOffset;
+}
+
+unsigned char TCP::getDataOffset() {
+	return this->tcpHeader->dataOffset;
+}
+
+void TCP::setWindowSize(short windowSize) {
+	this->tcpHeader->windowSize = windowSize;
+}
+
+unsigned short TCP::getWindowSize() {
+	return this->tcpHeader->windowSize;
+}
+
+void TCP::setCheckSum(short checkSum) {
+	this->tcpHeader->checkSum = checkSum;
+}
+
+unsigned short TCP::getCheckSum() {
+	return this->tcpHeader->checkSum;
+}
+
+void TCP::printTCP() {
+	printf("===================================================================\n");
+	printf("| TCP Header\t\t\t\t\t\t\t|\n");
+	printf("===================================================================\n");
+
+	printf("-------------------------------------------------------------------\n");
+	printf("| Source Port : %d \t\t| Destination Port : %d\t\t|\n", this->getSourcePort(), this->getDestPort());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Sequence Number : %u  \t\t\t\t|\n", this->getSequenceNumber());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Acknowledge Number : %u\t\t\t\t|\n", this->getAcknowledgeNumber());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Header Length : %d Bytes\t\t\t\t\t|\n", this->getDataOffset());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Window : %d\t\t\t\t\t\t\t|\n", this->getWindowSize());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Checksum : %d  \t\t\t\t\t\t|\n",this->getCheckSum());
+	printf( "-------------------------------------------------------------------\n");
+	printf("\n\n");
+}
+
+
+/*
+*--------------------------------------------------------------------------------------------
+*-------------------------------------------UDP 备泅何---------------------------------------
+*--------------------------------------------------------------------------------------------
+*/
