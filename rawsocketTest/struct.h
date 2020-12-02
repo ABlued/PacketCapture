@@ -120,6 +120,26 @@ typedef struct udp_hdr
 	unsigned short checkSum; // Udp checksum (optional) - 16bit
 } UDP_HDR;
 
+class UDP {
+private:
+	UDP_HDR* udpHeader;
+public:
+	UDP(UDP_HDR* udpHeader);
+	void makeUDPPacket(const unsigned char* pkt_data);
+
+	void setSourcePort(unsigned short sourcePort);
+	void setDestPort(unsigned short destPort);
+	void setLength(unsigned short length);
+	void setCheckSum(unsigned short checkSum);
+
+
+	unsigned short getSourcePort();
+	unsigned short getDestPort();
+	unsigned short getLength();
+	unsigned short getCheckSum();
+
+	void printUDP();
+};
 typedef struct icmp_hdr
 {
 	unsigned char type;			// icmp type - 8 bit

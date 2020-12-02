@@ -115,7 +115,7 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
 {
     
     int i;
-    int isTCPPacket;
+    int whatPacketIsIt;
     int isHTTPPacket = false;
     /*
     if (inputProtocal == 1) {       //TCP보는 코드
@@ -132,35 +132,57 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
         else isTCPPacket = false;
     }*/
     if (inputProtocal == 1) {
-        if (pkt_data[23] == TCP_PROTOCOL) isTCPPacket = true;
-        else isTCPPacket = false;
+        if (pkt_data[23] == TCP_PROTOCOL) whatPacketIsIt = TCP_PROTOCOL;
+        else if (pkt_data[23] == UDP_PROTOCOL) whatPacketIsIt = UDP_PROTOCOL;
+        else whatPacketIsIt = false;
     }
 
-
-    if (isTCPPacket == true) {
+    switch (whatPacketIsIt) {
+    case TCP_PROTOCOL:        
         isHTTPPacket = checkHTTP(header, pkt_data);
+       
+        if (isHTTPPacket == true) {
+            IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
+            IP* IPClass = new IP(currentIP);
+            IPClass->makeIPPacket(pkt_data);
+
+            TCP_HDR* currentTCP = (tcp_hdr*)malloc(sizeof(tcp_hdr));
+            TCP* TCPClass = new TCP(currentTCP);
+            TCPClass->makeTCPPacket(pkt_data);
+
+            IPClass->printIP();
+            TCPClass->printTCP();
+
+
+            delete TCPClass;
+            delete IPClass;
+        }
+        break;
+    case UDP_PROTOCOL: {
+
+            IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
+            IP* IPClass = new IP(currentIP);
+            IPClass->makeIPPacket(pkt_data);
+
+            UDP_HDR* currentUDP = (udp_hdr*)malloc(sizeof(udp_hdr));
+            UDP* UDPClass = new UDP(currentUDP);
+            UDPClass->makeUDPPacket(pkt_data);
+
+            IPClass->printIP();
+            UDPClass->printUDP();
+
+
+            delete UDPClass;
+            delete IPClass;
+            break;
     }
-    
-   if (isHTTPPacket == true) {
-        IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
-        IP* IPClass = new IP(currentIP);
-        IPClass->makeIPPacket(pkt_data);
 
-        TCP_HDR* currentTCP = (tcp_hdr*)malloc(sizeof(tcp_hdr));
-        TCP* TCPClass = new TCP(currentTCP);
-        TCPClass->makeTCPPacket(pkt_data);
+    case false :
 
-        IPClass->printIP();
-        TCPClass->printTCP();
-
-
-        delete TCPClass;
-        delete IPClass;
+        break;
+        //printf("확인할 수 없는 패킷입니다.");
     }
-    //else printf("이 패킷은 HTTP패킷이 아닙니다\n");
-    //outputPacket(header, pkt_data); /* 패킷 출력 */
-
-
+ 
 }
 int checkHTTP(const struct pcap_pkthdr* header, const u_char* pkt_data) {
     //int IPTotalLength = pkt_data[16] * 256 + pkt_data[17] + MacAddressLength;    //아직은 사용하지 않는 변수이다.

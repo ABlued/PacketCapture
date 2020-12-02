@@ -252,7 +252,7 @@ unsigned short TCP::getCheckSum() {
 
 void TCP::printTCP() {
 	printf("===================================================================\n");
-	printf("| TCP Header\t\t\t\t\t\t\t|\n");
+	printf("| TCP Packet\t\t\t\t\t\t\t|\n");
 	printf("===================================================================\n");
 
 	printf("-------------------------------------------------------------------\n");
@@ -277,3 +277,57 @@ void TCP::printTCP() {
 *-------------------------------------------UDP ±¸ÇöºÎ---------------------------------------
 *--------------------------------------------------------------------------------------------
 */
+
+
+UDP::UDP(UDP_HDR* udpHeader) {
+	this->udpHeader = udpHeader;
+}
+
+void UDP::makeUDPPacket(const unsigned char* pkt_data) {
+	this->setSourcePort(pkt_data[34] * 256 + pkt_data[35]);
+	this->setDestPort(pkt_data[36] * 256 + pkt_data[37]);
+	this->setLength(pkt_data[38] * 256 + pkt_data[39]);
+	this->setCheckSum(pkt_data[40] * 256 + pkt_data[41]);
+}
+
+void UDP::setSourcePort(unsigned short sourcePort) {
+	this->udpHeader->sourcePort = sourcePort;
+}
+
+unsigned short UDP::getSourcePort() {
+	return this->udpHeader->sourcePort;
+}
+void UDP::setDestPort(unsigned short destPort) {
+	this->udpHeader->destPort = destPort;
+}
+
+unsigned short UDP::getDestPort() {
+	return this->udpHeader->destPort;
+}
+void UDP::setLength(unsigned short length) {
+	this->udpHeader->length = length;
+}
+
+unsigned short UDP::getLength() {
+	return this->udpHeader->length;
+}
+
+void UDP::setCheckSum(unsigned short checkSum) {
+	this->udpHeader->checkSum = checkSum;
+}
+
+unsigned short UDP::getCheckSum() {
+	return this->udpHeader->checkSum;
+}
+
+void UDP::printUDP() {
+	printf("===================================================================\n");
+	printf("| UDP Packet\t\t\t\t\t\t\t|\n");
+	printf("===================================================================\n");
+	printf("-------------------------------------------------------------------\n");
+	printf("| Source Port : %d \t\t| Destination Port : %d\t\t|\n", this->getSourcePort(), this->getDestPort());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Length : %d\t\t\t| Checksum : %d\t\t|\n", this->getLength(), this->getCheckSum());
+	printf("-------------------------------------------------------------------\n");
+	printf("\n\n");
+};
