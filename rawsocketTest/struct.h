@@ -183,7 +183,7 @@ public:
 typedef struct dns_hdr
 {
 	unsigned short id;			 // identification number
-
+	/*
 	unsigned char qr : 1;		 // query/response flag
 	unsigned char opcode : 4;	 // purpose of message
 	unsigned char aa : 1;	 	 // authoritive answer
@@ -194,7 +194,7 @@ typedef struct dns_hdr
 	unsigned char ad : 1;		 // authenticated data
 	unsigned char cd : 1;		 // checking disabled
 	unsigned char rcode : 4;	 // response code
-	
+	*/
 	unsigned short totalQuestions; // number of question entries - 16 bit
 
 	unsigned short totalAnswers; // number of answer entries - 16 bit
@@ -204,3 +204,29 @@ typedef struct dns_hdr
 	unsigned short totalAddResource; // number of resource entries - 16 bit
 } DNS_HDR;
 
+class DNS {
+private:
+	DNS_HDR* dnsHeader;
+	char* message;
+	int length;
+	int end;
+public:
+	DNS(DNS_HDR* dnsHeader, IP* IPClass);
+	void makeDNSPacket(const unsigned char* pkt_data);
+
+	void setID(unsigned short ID);
+	void setTotalQuestions(unsigned short totalQuestions);
+	void setTotalAnswers(unsigned short totalAnswers);
+	void setTotalAuthResource(unsigned short totalAuthResource);
+	void setTotalAddResource(unsigned short totalAddResource);
+
+	unsigned short getID();
+	unsigned short getTotalQuestions();
+	unsigned short getTotalAnswers();
+	unsigned short getTotalAuthResource();
+	unsigned short getTotalAddResource();
+
+	int getEnd();
+	char* getMessage();
+	void printDNS();
+};

@@ -13,6 +13,7 @@
 int inputProtocal;
 void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_char* pkt_data);
 int checkHTTP(const struct pcap_pkthdr* header, const u_char* pkt_data);
+int checkDNS(const struct pcap_pkthdr* header, const u_char* pkt_data);
 void outputPacket(const struct pcap_pkthdr* header, const u_char* pkt_data);
 int main()
 {
@@ -59,9 +60,15 @@ int main()
     /* 캡쳐할 네트워크 디바이스 선택 */
     printf("Enter the interface number (1~%d) : ", i);
     scanf("%d", &num);
-    printf("조사하고 싶은 프로토콜을 입력하세요. 1.HTTP, 2.ICMP, 3.DNS ");
-    scanf("%d", &inputProtocal);
-    if (inputProtocal < 1 && 3 < inputProtocal) inputProtocal = ANYNOTCHOOSE;
+    do {
+        printf("조사하고 싶은 프로토콜을 입력하세요. 1.HTTP, 2.ICMP, 3.DNS ");
+        scanf("%d", &inputProtocal);
+        if (inputProtocal < 1 || 3 < inputProtocal) {
+            inputProtocal = ANYNOTCHOOSE;
+            printf("잘못된 번호를 입력하셨습니다.\n");
+        }
+    } while (inputProtocal == ANYNOTCHOOSE);
+    
     /* 입력값의 유효성판단 */
     if (num < 1 || num > i)
     {
@@ -98,12 +105,14 @@ int main()
     // 인자3 : 패킷이 캡쳐되었을때, 호출될 함수 핸들러
     // 인자4 : 콜백함수로 넘겨줄 파라미터
 
-    pcap_loop(adhandle, 0, packet_handler, NULL);
+    
 
 
     /* 네트워크 디바이스 종료 */
-    pcap_close(adhandle);
 
+    pcap_loop(adhandle, 0, packet_handler, NULL);
+
+    pcap_close(adhandle);
     return 0;
 }
 
@@ -117,7 +126,7 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
     int whatPacketIsIt;
 
     switch (inputProtocal) {
-    case CHOOSE_HTTP:{
+    case CHOOSE_HTTP: {
         int isHTTPPacket = false;
 
         if (pkt_data[23] == TCP_PROTOCOL) isHTTPPacket = checkHTTP(header, pkt_data);
@@ -142,10 +151,10 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
             delete TCPClass;
             delete IPClass;
 
-            
-            }
-        break;
+
         }
+        break;
+    }
     case CHOOSE_ICMP: {
         if (pkt_data[23] == ICMP_PROTOCOL) {
             IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
@@ -167,37 +176,46 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
     }
     case CHOOSE_DNS:
     {
-        IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
-        IP* IPClass = new IP(currentIP);
-        IPClass->makeIPPacket(pkt_data);
+        int isDNSPacket = false;
 
-        UDP_HDR* currentUDP = (udp_hdr*)malloc(sizeof(udp_hdr));
-        UDP* UDPClass = new UDP(currentUDP);
-        UDPClass->makeUDPPacket(pkt_data);
+        if (pkt_data[23] == UDP_PROTOCOL) isDNSPacket = checkDNS(header, pkt_data);
 
-        IPClass->printIP();
-        UDPClass->printUDP();
+        if (isDNSPacket == true) {
+            IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
+            IP* IPClass = new IP(currentIP);
+            IPClass->makeIPPacket(pkt_data);
 
+            UDP_HDR* currentUDP = (udp_hdr*)malloc(sizeof(udp_hdr));
+            UDP* UDPClass = new UDP(currentUDP);
+            UDPClass->makeUDPPacket(pkt_data);
 
-        delete UDPClass;
-        delete IPClass;
-        break;
+            DNS_HDR* currentDNS = (dns_hdr*)malloc(sizeof(dns_hdr));
+            DNS* DNSClass = new DNS(currentDNS, IPClass);
+            DNSClass->makeDNSPacket(pkt_data);
+
+            IPClass->printIP();
+            UDPClass->printUDP();
+            DNSClass->printDNS();
+
+            delete DNSClass;
+            delete UDPClass;
+            delete IPClass;
+            break;
+        }
     }
-        
-    case ANYNOTCHOOSE:
-        break;
-
     }
-
- 
 }
+//int IPTotalLength = pkt_data[16] * 256 + pkt_data[17] + MacAddressLength;    //아직은 사용하지 않는 변수이다.
 int checkHTTP(const struct pcap_pkthdr* header, const u_char* pkt_data) {
-    //int IPTotalLength = pkt_data[16] * 256 + pkt_data[17] + MacAddressLength;    //아직은 사용하지 않는 변수이다.
-    //TCP 패킷안에 HTTP 정보가 들어있는지 찾는 함수이다. 자세한건 와이어샤크 HTTP패킷 참조
     if (pkt_data[34] == 0 && pkt_data[35] == HTTP_PORT_NUMBER) return true;
     else if (pkt_data[36] == 0 && pkt_data[37] == HTTP_PORT_NUMBER) return true;
     else false;
 
+}
+int checkDNS(const struct pcap_pkthdr* header, const u_char* pkt_data) {
+    if (pkt_data[34] == 0 && pkt_data[35] == DNS_PORT_NUMBER) return true;
+    else if (pkt_data[36] == 0 && pkt_data[37] == DNS_PORT_NUMBER) return true;
+    else false;
 }
 void outputPacket(const struct pcap_pkthdr* header, const u_char* pkt_data) {       //수집한 패킷의 정보를 출력
     int i;

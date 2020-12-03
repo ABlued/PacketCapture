@@ -433,3 +433,100 @@ void HTTP::printHTTP() {
 HTTP::~HTTP() {
 	free(this->message);
 }
+
+/*
+*--------------------------------------------------------------------------------------------
+*-------------------------------------------DNS 구현부---------------------------------------
+*--------------------------------------------------------------------------------------------
+*/
+
+DNS::DNS(DNS_HDR* dnsHeader, IP* IPClass) {
+	this->dnsHeader = dnsHeader;
+	this->length = IPClass->getTotalLength() + MacAddressLength;
+}
+
+void DNS::makeDNSPacket(const unsigned char* pkt_data) {
+
+	this->setID(pkt_data[42] * 256 + pkt_data[43]);
+	this->setTotalQuestions(pkt_data[46] * 256 + pkt_data[47]);
+	this->setTotalAnswers(pkt_data[48] * 256 + pkt_data[49]);
+	this->setTotalAuthResource(pkt_data[50] * 256 + pkt_data[51]);
+	this->setTotalAddResource(pkt_data[52] * 256 + pkt_data[53]);
+
+	message = (char*)malloc(sizeof(char) * 458);	//dns의 최대크기는 512비트이며 헤더크기는 54비트이다
+	int j = 0;
+	for (int i = DNSPacketHeaderLength; i < this->length; i++, j++) {
+		message[j] = pkt_data[i];
+	}
+	this->end = j;
+}
+
+void DNS::setID(unsigned short ID) {
+	this->dnsHeader->id = ID;
+}
+
+unsigned short DNS::getID() {
+	return this->dnsHeader->id;
+}
+
+void DNS::setTotalQuestions(unsigned short totalQuestions) {
+	this->dnsHeader->totalQuestions = totalQuestions;
+}
+
+unsigned short DNS::getTotalQuestions() {
+	return this->dnsHeader->totalQuestions;
+}
+
+void DNS::setTotalAnswers(unsigned short totalAnswers) {
+	this->dnsHeader->totalAnswers = totalAnswers;
+}
+
+unsigned short DNS::getTotalAnswers() {
+	return this->dnsHeader->totalAnswers;
+}
+void DNS::setTotalAuthResource(unsigned short totalAuthResource) {
+	this->dnsHeader->totalAuthResource = totalAuthResource;
+}
+
+unsigned short DNS::getTotalAuthResource() {
+	return this->dnsHeader->totalAuthResource;
+}
+
+void DNS::setTotalAddResource(unsigned short totalAddResource) {
+	this->dnsHeader->totalAddResource = totalAddResource;
+}
+
+unsigned short DNS::getTotalAddResource() {
+	return this->dnsHeader->totalAddResource;
+}
+
+int DNS::getEnd() {
+	return this->end;
+}
+
+
+char* DNS::getMessage() {
+	return this->message;
+}
+
+void DNS::printDNS() {
+	printf("===================================================================\n");
+	printf("| DNS Packet\t\t\t\t\t\t\t|\n");
+	printf("===================================================================\n");
+	printf("-------------------------------------------------------------------\n");
+	printf("| Transaction ID : %d\t\t\t\t\t\t|\n", this->getID());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Questions : %d\t\t\t| Answer RR : %d\t\t\t|\n", this->getTotalQuestions(), this->getTotalAnswers());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Authority RR : %d\t\t| Additional RR : %d\t\t|\n", this->getTotalAuthResource(), this->getTotalAddResource());
+	printf("-------------------------------------------------------------------\n");
+	printf("| DNS Answers\t\t\t\t\t\t\t|\n");
+	printf("-------------------------------------------------------------------\n");
+	char* message = this->getMessage();
+	for (int i = 0; i < this->getEnd(); i++) {
+		printf("%c", message[i]);
+	}
+	printf("\n");
+	printf("-------------------------------------------------------------------\n");
+	printf("\n\n");
+}

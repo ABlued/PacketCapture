@@ -10,5 +10,6 @@
 #define ANYNOTCHOOSE -1
 #define MacAddressLength 14
 #define IP_TCPPacketHeaderLength 54
+#define DNSPacketHeaderLength 54
 #define HTTP_PORT_NUMBER 80
 #define DNS_PORT_NUMBER 53
