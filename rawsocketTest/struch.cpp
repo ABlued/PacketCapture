@@ -1,7 +1,6 @@
 #include "struct.h"
 #include "define.h"
-#include <stdio.h>
-#include <stdlib.h>
+
 /*
 *--------------------------------------------------------------------------------------------
 *-------------------------------------------IP 备泅何---------------------------------------
@@ -157,9 +156,9 @@ void IP::printIP() {
 	printf("===================================================================\n");
 	printf("\n");
 	printf("-------------------------------------------------------------------\n");
-	printf("| Version : %d \t| Header Length : %d Bytes\t| Type : %d\t|\n", (unsigned int)this->getVersion(), (unsigned int)(this->getHeaderLength() * 4), (unsigned int)this->getTypeOfService());
+	printf("| Version : %d | Header Length : %d Bytes\t| Type : %d  |\n", (unsigned int)this->getVersion(), (unsigned int)(this->getHeaderLength() * 4), (unsigned int)this->getTypeOfService());
 	printf("-------------------------------------------------------------------\n");
-	printf("| IP Total Length : %d Bytes \t\t\t\t\t|\n",this->getTotalLength());
+	printf("| IP Total Length : %d Bytes \t\t\t\t|\n",this->getTotalLength());
 	printf("-------------------------------------------------------------------\n");
 	printf("| Identification : %d\t\t\t\t\t|\n", this->getIdentification());
 	printf("-------------------------------------------------------------------\n");
@@ -174,7 +173,28 @@ void IP::printIP() {
 	printf("\n\n");
 }
 
-
+void IP::fPrintIP(FILE* fp) {
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "| IP Packet\t\t\t\t\t\t|\n");
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Version : %d \t| Header Length : %d Bytes\t| Type : %d\t|\n", (unsigned int)this->getVersion(), (unsigned int)(this->getHeaderLength() * 4), (unsigned int)this->getTypeOfService());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| IP Total Length : %d Bytes \t\t\t\t|\n", this->getTotalLength());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Identification : %d\t\t\t\t|\n", this->getIdentification());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| TTL : %d\t| Protocol : %d\t| Checksum : %d|\n", (unsigned int)this->getTTL(), (unsigned int)this->getProtocolType(), this->getCheckSum());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Source IP : %d.%d.%d.%d\t\t\t\t|\n", this->getSourceAddress(1),
+		this->getSourceAddress(2), this->getSourceAddress(3), this->getSourceAddress(4));
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Destination IP :%d.%d.%d.%d\t\t\t|\n", this->getDestinationAddress(1),
+		this->getDestinationAddress(2), this->getDestinationAddress(3), this->getDestinationAddress(4));
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "\n\n");
+}
 /*
 *--------------------------------------------------------------------------------------------
 *-------------------------------------------TCP 备泅何---------------------------------------
@@ -255,7 +275,7 @@ void TCP::printTCP() {
 	printf("===================================================================\n");
 	printf("| TCP Packet\t\t\t\t\t\t\t|\n");
 	printf("===================================================================\n");
-
+	printf("\n");
 	printf("-------------------------------------------------------------------\n");
 	printf("| Source Port : %d \t\t| Destination Port : %d\t\t|\n", this->getSourcePort(), this->getDestPort());
 	printf("-------------------------------------------------------------------\n");
@@ -272,7 +292,26 @@ void TCP::printTCP() {
 	printf("\n\n");
 }
 
-
+void TCP::fPrintTCP(FILE* fp) {
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "| TCP Packet\t\t\t\t\t\t|\n");
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Source Port : %d \t\t| Destination Port : %d\t|\n", this->getSourcePort(), this->getDestPort());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Sequence Number : %u  \t\t\t|\n", this->getSequenceNumber());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Acknowledge Number : %u\t\t\t|\n", this->getAcknowledgeNumber());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Header Length : %d Bytes\t\t\t\t|\n", this->getDataOffset());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Window : %d\t\t\t\t\t|\n", this->getWindowSize());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Checksum : %d  \t\t\t\t|\n", this->getCheckSum());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "\n\n");
+}
 /*
 *--------------------------------------------------------------------------------------------
 *-------------------------------------------UDP 备泅何---------------------------------------
@@ -325,6 +364,7 @@ void UDP::printUDP() {
 	printf("===================================================================\n");
 	printf("| UDP Packet\t\t\t\t\t\t\t|\n");
 	printf("===================================================================\n");
+	printf("\n");
 	printf("-------------------------------------------------------------------\n");
 	printf("| Source Port : %d \t\t| Destination Port : %d\t\t|\n", this->getSourcePort(), this->getDestPort());
 	printf("-------------------------------------------------------------------\n");
@@ -333,20 +373,39 @@ void UDP::printUDP() {
 	printf("\n\n");
 };
 
-
+void UDP::fPrintUDP(FILE* fp) {
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "| UDP Packet\t\t\t\t\t\t|\n");
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Source Port : %d \t| Destination Port : %d\t|\n", this->getSourcePort(), this->getDestPort());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Length : %d\t\t| Checksum : %d  |\n", this->getLength(), this->getCheckSum());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "\n\n");
+};
 /*
 *--------------------------------------------------------------------------------------------
 *-------------------------------------------ICMP 备泅何---------------------------------------
 *--------------------------------------------------------------------------------------------
 */
 
-ICMP::ICMP(ICMP_HDR* icmpHeader) {
+ICMP::ICMP(ICMP_HDR* icmpHeader, IP* IPClass) {
 	this->icmpHeader = icmpHeader;
+	this->length = IPClass->getTotalLength() + MacAddressLength;
 }
 void ICMP::makeICMPPacket(const unsigned char* pkt_data) {
 	this->setType(pkt_data[34]);
 	this->setCode(pkt_data[35]);
 	this->setCheckSum(pkt_data[36] * 256 + pkt_data[37]);
+
+	message = (char*)malloc(sizeof(char) * 1500);
+	int j = 0;
+	for (int i = ICMP_DATA_START_POINT; i < this->length; i++, j++) {
+		message[j] = pkt_data[i];
+	}
+	this->end = j;
 }
 
 void ICMP::setType(unsigned char type) {
@@ -371,19 +430,55 @@ unsigned short ICMP::getCheckSum() {
 	return this->icmpHeader->checkSum;
 }
 
+int ICMP::getEnd() {
+	return this->end;
+}
+
+char* ICMP::getMessage() {
+	return this->message;
+}
+
 void ICMP::printICMP() {
 	printf("===================================================================\n");
-	printf("| ICMP Packet\t\t\t\t\t\t\t|\n");
+	printf("| ICMP Packet\t\t\t\t\t\t|\n");
 	printf("===================================================================\n");
+	printf("\n");
 	printf("-------------------------------------------------------------------\n");
 	printf("| Type : %d\t\t\t| Code : %d\t\t|\n", this->getType(), this->getCode());
 	printf("-------------------------------------------------------------------\n");
 	printf("| Checksum : %d  \t\t\t\t\t\t|\n", this->getCheckSum());
 	printf("-------------------------------------------------------------------\n");
+	printf("| ICMP Data\t\t\t\t\t\t\t|\n");
+	printf("-------------------------------------------------------------------\n");
+	char* message = this->getMessage();
+	for (int i = 0; i < this->getEnd(); i++) {
+		printf("%c", message[i]);
+	}
+	printf("\n");
+	printf("-------------------------------------------------------------------\n");
 	printf("\n\n");
 }
 
-
+void ICMP::fPrintICMP(FILE* fp) {
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "| ICMP Packet\t\t\t\t\t\t|\n");
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Type : %d\t\t| Code : %d\t\t|\n", this->getType(), this->getCode());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Checksum : %d  \t\t\t\t|\n", this->getCheckSum());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| ICMP Data\t\t\t\t\t|\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	char* message = this->getMessage();
+	for (int i = 0; i < this->getEnd(); i++) {
+		fprintf(fp, "%c", message[i]);
+	}
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "\n\n");
+}
 
 /*
 *--------------------------------------------------------------------------------------------
@@ -417,6 +512,7 @@ void HTTP::printHTTP() {
 	printf("===================================================================\n");
 	printf("| HTTP Packet\t\t\t\t\t\t\t|\n");
 	printf("===================================================================\n");
+	printf("\n");
 	printf("-------------------------------------------------------------------\n");
 	char* message = this->getMessage();
 	for (int i = 0; i < this->getEnd(); i++) {
@@ -430,6 +526,26 @@ void HTTP::printHTTP() {
 	printf("-------------------------------------------------------------------\n");
 	printf("\n\n");
 }
+
+void HTTP::fPrintHTTP(FILE* fp) {
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "| HTTP Packet\t\t\t\t\t\t|\n");
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	char* message = this->getMessage();
+	for (int i = 0; i < this->getEnd(); i++) {
+		fprintf(fp, "%c", message[i]);
+		if (message[i] == 13) {
+			fprintf(fp, "\n");
+			i++;
+		}
+	}
+	fprintf(fp, "\n\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "\n\n");
+}
+
 HTTP::~HTTP() {
 	free(this->message);
 }
@@ -513,6 +629,7 @@ void DNS::printDNS() {
 	printf("===================================================================\n");
 	printf("| DNS Packet\t\t\t\t\t\t\t|\n");
 	printf("===================================================================\n");
+	printf("\n");
 	printf("-------------------------------------------------------------------\n");
 	printf("| Transaction ID : %d\t\t\t\t\t\t|\n", this->getID());
 	printf("-------------------------------------------------------------------\n");
@@ -529,4 +646,27 @@ void DNS::printDNS() {
 	printf("\n");
 	printf("-------------------------------------------------------------------\n");
 	printf("\n\n");
+}
+
+void DNS::fPrintDNS(FILE* fp) {
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "| DNS Packet\t\t\t\t\t\t|\n");
+	fprintf(fp, "===============================================\n");
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Transaction ID : %d\t\t\t\t\t|\n", this->getID());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Questions : %d  \t\t| Answer RR : %d\t\t|\n", this->getTotalQuestions(), this->getTotalAnswers());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| Authority RR : %d\t\t| Additional RR : %d\t\t|\n", this->getTotalAuthResource(), this->getTotalAddResource());
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "| DNS Answers\t\t\t\t\t|\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	char* message = this->getMessage();
+	for (int i = 0; i < this->getEnd(); i++) {
+		fprintf(fp, "%c", message[i]);
+	}
+	fprintf(fp, "\n");
+	fprintf(fp, "-------------------------------------------------------------------\n");
+	fprintf(fp, "\n\n");
 }

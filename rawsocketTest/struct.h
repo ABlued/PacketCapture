@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include "define.h"
 typedef struct ip_hdr
 {
     unsigned char  version;            // 4-bit IPv4 version
@@ -58,6 +58,7 @@ public:
 	unsigned char  getDestinationAddress(int index);
 
 	void printIP();
+	void fPrintIP(FILE* fp);
 };
 typedef struct tcp_hdr 
 {
@@ -110,6 +111,7 @@ public:
 	unsigned short getCheckSum();
 
 	void printTCP();
+	void fPrintTCP(FILE* fp);
 };
 
 class HTTP {
@@ -125,6 +127,7 @@ public:
 
 	void makeHTTPPacket(const unsigned char* pkt_data);
 	void printHTTP();
+	void fPrintHTTP(FILE* fp);
 	~HTTP();
 };
 
@@ -155,6 +158,7 @@ public:
 	unsigned short getCheckSum();
 
 	void printUDP();
+	void fPrintUDP(FILE* fp);
 };
 typedef struct icmp_hdr
 {
@@ -165,8 +169,11 @@ typedef struct icmp_hdr
 class ICMP {
 private:
 	ICMP_HDR* icmpHeader;
+	char* message;
+	int length;
+	int end;
 public:
-	ICMP(ICMP_HDR* icmpHeader);
+	ICMP(ICMP_HDR* icmpHeader, IP* IPClass);
 	void makeICMPPacket(const unsigned char* pkt_data);
 
 	void setType(unsigned char type);
@@ -177,7 +184,11 @@ public:
 	unsigned char getCode();
 	unsigned short getCheckSum();
 
+	int getEnd();
+	char* getMessage();
+
 	void printICMP();
+	void fPrintICMP(FILE* fp);
 };
 
 typedef struct dns_hdr
@@ -228,5 +239,7 @@ public:
 
 	int getEnd();
 	char* getMessage();
+
 	void printDNS();
+	void fPrintDNS(FILE* fp);
 };

@@ -1,16 +1,9 @@
-#pragma comment (lib,"ws2_32.lib")
-#pragma comment (lib,"Packet.lib")
-#pragma comment (lib,"wpcap.lib")
-#pragma warning(disable:4996)
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <pcap.h>
-#include <WinSock2.h>
+// https://rookie24.tistory.com/2?category=796471 에서 코드를 따왔다.
 #include "define.h"
 #include "struct.h"
-// https://rookie24.tistory.com/2?category=796471 에서 코드를 따왔다.
+
 int inputProtocal;
+FILE* fp = fopen("PacketList.txt", "w+");
 void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_char* pkt_data);
 int checkHTTP(const struct pcap_pkthdr* header, const u_char* pkt_data);
 int checkDNS(const struct pcap_pkthdr* header, const u_char* pkt_data);
@@ -106,13 +99,13 @@ int main()
     // 인자4 : 콜백함수로 넘겨줄 파라미터
 
     
-
-
     /* 네트워크 디바이스 종료 */
 
-    pcap_loop(adhandle, 0, packet_handler, NULL);
+    pcap_loop(adhandle, 20, packet_handler, NULL);
 
-    pcap_close(adhandle);
+    pcap_close(adhandle);    
+    fclose(fp);
+    system("notepad.exe PacketList.txt");
     return 0;
 }
 
@@ -147,6 +140,10 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
             TCPClass->printTCP();
             HTTPClass->printHTTP();
 
+            IPClass->fPrintIP(fp);
+            TCPClass->fPrintTCP(fp);
+            HTTPClass->fPrintHTTP(fp);
+
             delete HTTPClass;
             delete TCPClass;
             delete IPClass;
@@ -162,12 +159,14 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
             IPClass->makeIPPacket(pkt_data);
 
             ICMP_HDR* currentICMP = (icmp_hdr*)malloc(sizeof(icmp_hdr));
-            ICMP* ICMPClass = new ICMP(currentICMP);
+            ICMP* ICMPClass = new ICMP(currentICMP, IPClass);
             ICMPClass->makeICMPPacket(pkt_data);
 
             IPClass->printIP();
             ICMPClass->printICMP();
 
+            IPClass->fPrintIP(fp);
+            ICMPClass->fPrintICMP(fp);
 
             delete ICMPClass;
             delete IPClass;
@@ -196,6 +195,10 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
             IPClass->printIP();
             UDPClass->printUDP();
             DNSClass->printDNS();
+
+            IPClass->fPrintIP(fp);
+            UDPClass->fPrintUDP(fp);
+            DNSClass->fPrintDNS(fp);
 
             delete DNSClass;
             delete UDPClass;
