@@ -112,6 +112,22 @@ public:
 	void printTCP();
 };
 
+class HTTP {
+private:
+	int lenght;
+	int end;
+	char* message;
+public:
+	HTTP(IP* ipPacket);
+
+	int getEnd();
+	char* getMessage();
+
+	void makeHTTPPacket(const unsigned char* pkt_data);
+	void printHTTP();
+	~HTTP();
+};
+
 typedef struct udp_hdr
 {
 	unsigned short sourcePort;  // source port - 16 bit
@@ -146,6 +162,23 @@ typedef struct icmp_hdr
 	unsigned char code;			// icmp code - 8 bit
  	unsigned short checkSum;	// checksum - 16 bit
 }ICMP_HDR;
+class ICMP {
+private:
+	ICMP_HDR* icmpHeader;
+public:
+	ICMP(ICMP_HDR* icmpHeader);
+	void makeICMPPacket(const unsigned char* pkt_data);
+
+	void setType(unsigned char type);
+	void setCode(unsigned char code);
+	void setCheckSum(unsigned short checkSum);
+
+	unsigned char getType();
+	unsigned char getCode();
+	unsigned short getCheckSum();
+
+	void printICMP();
+};
 
 typedef struct dns_hdr
 {
@@ -170,3 +203,4 @@ typedef struct dns_hdr
 
 	unsigned short totalAddResource; // number of resource entries - 16 bit
 } DNS_HDR;
+

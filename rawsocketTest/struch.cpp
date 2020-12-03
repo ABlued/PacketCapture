@@ -1,6 +1,7 @@
 #include "struct.h"
+#include "define.h"
 #include <stdio.h>
-
+#include <stdlib.h>
 /*
 *--------------------------------------------------------------------------------------------
 *-------------------------------------------IP 구현부---------------------------------------
@@ -331,3 +332,104 @@ void UDP::printUDP() {
 	printf("-------------------------------------------------------------------\n");
 	printf("\n\n");
 };
+
+
+/*
+*--------------------------------------------------------------------------------------------
+*-------------------------------------------ICMP 구현부---------------------------------------
+*--------------------------------------------------------------------------------------------
+*/
+
+ICMP::ICMP(ICMP_HDR* icmpHeader) {
+	this->icmpHeader = icmpHeader;
+}
+void ICMP::makeICMPPacket(const unsigned char* pkt_data) {
+	this->setType(pkt_data[34]);
+	this->setCode(pkt_data[35]);
+	this->setCheckSum(pkt_data[36] * 256 + pkt_data[37]);
+}
+
+void ICMP::setType(unsigned char type) {
+	this->icmpHeader->type = type;
+}
+
+unsigned char ICMP::getType() {
+	return this->icmpHeader->type;
+}
+void ICMP::setCode(unsigned char code) {
+	this->icmpHeader->code = code;
+}
+
+unsigned char ICMP::getCode() {
+	return this->icmpHeader->checkSum;
+}
+
+void ICMP::setCheckSum(unsigned short checkSum) {
+	this->icmpHeader->checkSum = checkSum;
+}
+unsigned short ICMP::getCheckSum() {
+	return this->icmpHeader->checkSum;
+}
+
+void ICMP::printICMP() {
+	printf("===================================================================\n");
+	printf("| ICMP Packet\t\t\t\t\t\t\t|\n");
+	printf("===================================================================\n");
+	printf("-------------------------------------------------------------------\n");
+	printf("| Type : %d\t\t\t| Code : %d\t\t|\n", this->getType(), this->getCode());
+	printf("-------------------------------------------------------------------\n");
+	printf("| Checksum : %d  \t\t\t\t\t\t|\n", this->getCheckSum());
+	printf("-------------------------------------------------------------------\n");
+	printf("\n\n");
+}
+
+
+
+/*
+*--------------------------------------------------------------------------------------------
+*-------------------------------------------HTTP 구현부---------------------------------------
+*--------------------------------------------------------------------------------------------
+*/
+
+
+HTTP::HTTP(IP* ipPacket) {
+	this->lenght = ipPacket->getTotalLength();		//-1은 인덱스가 0부터 시작하기때문이다.
+}
+
+int HTTP::getEnd() {
+	return this->end;
+}
+
+char* HTTP::getMessage() {
+	return this->message;
+}
+
+void HTTP::makeHTTPPacket(const unsigned char* pkt_data) {
+	message = (char*)malloc(sizeof(char) * 1500);
+	int j = 0;
+	for (int i = IP_TCPPacketHeaderLength; i < this->lenght; i++,j++) {
+		message[j] = pkt_data[i];
+	}
+	this->end = j;
+}
+
+void HTTP::printHTTP() {
+	printf("===================================================================\n");
+	printf("| HTTP Packet\t\t\t\t\t\t\t|\n");
+	printf("===================================================================\n");
+	printf("-------------------------------------------------------------------\n");
+	char* message = this->getMessage();
+	for (int i = 0; i < this->getEnd(); i++) {
+		printf("%c", message[i]);
+		if (message[i] == 13) {
+			printf("\n");
+			i++;
+		}
+	}
+	printf("\n\n");
+	printf("-------------------------------------------------------------------\n");
+	printf("\n\n");
+}
+HTTP::~HTTP() {
+	free(this->message);
+}

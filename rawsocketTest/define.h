@@ -4,8 +4,11 @@
 #define TCP_PROTOCOL 6
 #define UDP_PROTOCOL 17
 #define ICMP_PROTOCOL 1
-#define HTTP_PROTOCOL_1 72	//48(16진수) H
-#define HTTP_PROTOCOL_2 84  //54(16진수) T
-#define HTTP_PROTOCOL_3 84	//54(16진수) T
-#define HTTP_PROTOCOL_4 80  //50(16진수) P
+#define CHOOSE_HTTP 1
+#define CHOOSE_ICMP 2
+#define CHOOSE_DNS 3
+#define ANYNOTCHOOSE -1
 #define MacAddressLength 14
+#define IP_TCPPacketHeaderLength 54
+#define HTTP_PORT_NUMBER 80
+#define DNS_PORT_NUMBER 53

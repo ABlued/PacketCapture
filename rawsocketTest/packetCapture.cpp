@@ -61,6 +61,7 @@ int main()
     scanf("%d", &num);
     printf("조사하고 싶은 프로토콜을 입력하세요. 1.HTTP, 2.ICMP, 3.DNS ");
     scanf("%d", &inputProtocal);
+    if (inputProtocal < 1 && 3 < inputProtocal) inputProtocal = ANYNOTCHOOSE;
     /* 입력값의 유효성판단 */
     if (num < 1 || num > i)
     {
@@ -113,34 +114,14 @@ int main()
 // 캡처한 패킷에 대한 모든 일은 이 함수 에서 
 void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_char* pkt_data)
 {
-    
-    int i;
     int whatPacketIsIt;
-    int isHTTPPacket = false;
-    /*
-    if (inputProtocal == 1) {       //TCP보는 코드
-        if (pkt_data[23] == TCP_PROTOCOL) {
-            isTCPPacket = true;
-            TCP_HDR* currentTCP = (tcp_hdr*)malloc(sizeof(tcp_hdr));
-            TCP* TCPClass = new TCP(currentTCP);
-            TCPClass->makeTCPPacket(pkt_data);
-            //outputPacket(header, pkt_data);
-            TCPClass->printTCP();
-            free(currentTCP);
-            delete TCPClass;
-        }
-        else isTCPPacket = false;
-    }*/
-    if (inputProtocal == 1) {
-        if (pkt_data[23] == TCP_PROTOCOL) whatPacketIsIt = TCP_PROTOCOL;
-        else if (pkt_data[23] == UDP_PROTOCOL) whatPacketIsIt = UDP_PROTOCOL;
-        else whatPacketIsIt = false;
-    }
 
-    switch (whatPacketIsIt) {
-    case TCP_PROTOCOL:        
-        isHTTPPacket = checkHTTP(header, pkt_data);
-       
+    switch (inputProtocal) {
+    case CHOOSE_HTTP:{
+        int isHTTPPacket = false;
+
+        if (pkt_data[23] == TCP_PROTOCOL) isHTTPPacket = checkHTTP(header, pkt_data);
+
         if (isHTTPPacket == true) {
             IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
             IP* IPClass = new IP(currentIP);
@@ -150,55 +131,73 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
             TCP* TCPClass = new TCP(currentTCP);
             TCPClass->makeTCPPacket(pkt_data);
 
+            HTTP* HTTPClass = new HTTP(IPClass);
+            HTTPClass->makeHTTPPacket(pkt_data);
+
             IPClass->printIP();
             TCPClass->printTCP();
+            HTTPClass->printHTTP();
 
-
+            delete HTTPClass;
             delete TCPClass;
             delete IPClass;
-        }
-        break;
-    case UDP_PROTOCOL: {
 
+            
+            }
+        break;
+        }
+    case CHOOSE_ICMP: {
+        if (pkt_data[23] == ICMP_PROTOCOL) {
             IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
             IP* IPClass = new IP(currentIP);
             IPClass->makeIPPacket(pkt_data);
 
-            UDP_HDR* currentUDP = (udp_hdr*)malloc(sizeof(udp_hdr));
-            UDP* UDPClass = new UDP(currentUDP);
-            UDPClass->makeUDPPacket(pkt_data);
+            ICMP_HDR* currentICMP = (icmp_hdr*)malloc(sizeof(icmp_hdr));
+            ICMP* ICMPClass = new ICMP(currentICMP);
+            ICMPClass->makeICMPPacket(pkt_data);
 
             IPClass->printIP();
-            UDPClass->printUDP();
+            ICMPClass->printICMP();
 
 
-            delete UDPClass;
+            delete ICMPClass;
             delete IPClass;
-            break;
-    }
-
-    case false :
-
+        }
         break;
-        //printf("확인할 수 없는 패킷입니다.");
     }
+    case CHOOSE_DNS:
+    {
+        IPV4_HDR* currentIP = (ip_hdr*)malloc(sizeof(struct ip_hdr));
+        IP* IPClass = new IP(currentIP);
+        IPClass->makeIPPacket(pkt_data);
+
+        UDP_HDR* currentUDP = (udp_hdr*)malloc(sizeof(udp_hdr));
+        UDP* UDPClass = new UDP(currentUDP);
+        UDPClass->makeUDPPacket(pkt_data);
+
+        IPClass->printIP();
+        UDPClass->printUDP();
+
+
+        delete UDPClass;
+        delete IPClass;
+        break;
+    }
+        
+    case ANYNOTCHOOSE:
+        break;
+
+    }
+
  
 }
 int checkHTTP(const struct pcap_pkthdr* header, const u_char* pkt_data) {
     //int IPTotalLength = pkt_data[16] * 256 + pkt_data[17] + MacAddressLength;    //아직은 사용하지 않는 변수이다.
     //TCP 패킷안에 HTTP 정보가 들어있는지 찾는 함수이다. 자세한건 와이어샤크 HTTP패킷 참조
-    for (int i = 0; i < header->caplen; i++)
-    {
-        if (pkt_data[i] == HTTP_PROTOCOL_1)
-            if (pkt_data[i + 1] == HTTP_PROTOCOL_2 &&
-                pkt_data[i + 2] == HTTP_PROTOCOL_3 &&
-                pkt_data[i + 3] == HTTP_PROTOCOL_4
-                ) {
-                return true;
-            }
+    if (pkt_data[34] == 0 && pkt_data[35] == HTTP_PORT_NUMBER) return true;
+    else if (pkt_data[36] == 0 && pkt_data[37] == HTTP_PORT_NUMBER) return true;
+    else false;
 
-    }
-    return false;
 }
 void outputPacket(const struct pcap_pkthdr* header, const u_char* pkt_data) {       //수집한 패킷의 정보를 출력
     int i;
