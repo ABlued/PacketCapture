@@ -53,6 +53,7 @@ int main()
     /* 캡쳐할 네트워크 디바이스 선택 */
     printf("Enter the interface number (1~%d) : ", i);
     scanf("%d", &num);
+    /* 필터링할 프로토콜 입력 */
     do {
         printf("조사하고 싶은 프로토콜을 입력하세요. 1.HTTP, 2.ICMP, 3.DNS ");
         scanf("%d", &inputProtocal);
@@ -101,7 +102,7 @@ int main()
     
     /* 네트워크 디바이스 종료 */
 
-    pcap_loop(adhandle, 20, packet_handler, NULL);
+    pcap_loop(adhandle, 300, packet_handler, NULL);
 
     pcap_close(adhandle);    
     fclose(fp);
@@ -116,7 +117,6 @@ int main()
 // 캡처한 패킷에 대한 모든 일은 이 함수 에서 
 void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_char* pkt_data)
 {
-    int whatPacketIsIt;
 
     switch (inputProtocal) {
     case CHOOSE_HTTP: {
